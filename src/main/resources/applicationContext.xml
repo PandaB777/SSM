@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+
+    <!-- 扫描业务层的注解 -->
+    <context:component-scan base-package="com.panda.service"></context:component-scan>
+    <!--  扫描异常处理器的包-->
+    <context:component-scan base-package="com.panda.exception"></context:component-scan>
+    <!--资源文件解析器 -->
+    <!--<context:property-placeholder location="classpath:c3p0.properties" />-->
+    <context:property-placeholder location="classpath:druid.properties" />
+    <!--配置druid连接池-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          init-method="init" destroy-method="close">
+        <!-- 提供数据库连接信息和连接池的常用信息 -->
+        <!-- 驱动类 -->
+        <property name="driverClassName" value="${db.driverClass}" />
+        <!-- 连接数据库的地址 -->
+        <property name="url" value="${db.jdbcUrl}" />
+        <!-- 连接数据库的用户名 -->
+        <property name="username" value="${db.user}" />
+        <!-- 连接数据库的密码 -->
+        <property name="password" value="${db.password}" />
+
+        <!-- 初始化连接数量 -->
+        <property name="initialSize" value="5" />
+        <!-- 最大连接数 -->
+        <property name="maxActive" value="100" />
+        <!-- 最小连接数 -->
+        <property name="minIdle" value="5" />
+        <!-- 配置获取连接等待超时的时间 -->
+        <property name="maxWait" value="120000" />
+        <!-- 超过时间限制是否回收 -->
+        <property name="removeAbandoned" value="true" />
+        <!-- 超过时间限制多长 -->
+        <property name="removeAbandonedTimeout" value="1800" />
+        <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+        <property name="timeBetweenEvictionRunsMillis" value="120000" />
+        <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+        <property name="minEvictableIdleTimeMillis" value="300000" />
+        <!-- 用来检测连接是否有效的sql，要求是一个查询语句 -->
+        <property name="validationQuery" value="SELECT 1" />
+        <!-- 申请连接的时候检测 -->
+        <property name="testWhileIdle" value="true" />
+        <!-- 申请连接时执行validationQuery检测连接是否有效，配置为true会降低性能 -->
+        <property name="testOnBorrow" value="false" />
+        <!-- 归还连接时执行validationQuery检测连接是否有效，配置为true会降低性能 -->
+        <property name="testOnReturn" value="false" />
+        <!-- 打开PSCache，并且指定每个连接上PSCache的大小 -->
+        <property name="poolPreparedStatements" value="true" />
+        <property name="maxPoolPreparedStatementPerConnectionSize"
+                  value="20" />
+        <property name="defaultAutoCommit" value="false" />
+        <!-- 配置监控统计拦截的filters -->
+        <property name="filters" value="stat"/>
+    </bean>
+    <!--&lt;!&ndash;配置C3P0连接池 &ndash;&gt;
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        &lt;!&ndash; 提供数据库连接信息和连接池的常用信息 &ndash;&gt;
+        &lt;!&ndash; 驱动类 &ndash;&gt;
+        <property name="driverClass" value="${jdbc.driverClass}" />
+        &lt;!&ndash; 连接数据库的地址 &ndash;&gt;
+        <property name="jdbcUrl" value="${jdbc.jdbcUrl}" />
+        &lt;!&ndash; 连接数据库的用户名 &ndash;&gt;
+        <property name="user" value="${jdbc.user}" />
+        &lt;!&ndash; 连接数据库的密码 &ndash;&gt;
+        <property name="password" value="${jdbc.password}" />
+
+        &lt;!&ndash; 最大连接数 &ndash;&gt;
+        <property name="maxPoolSize" value="${c3p0.maxPoolSize}"></property>
+        &lt;!&ndash; 最小连接数 &ndash;&gt;
+        <property name="minPoolSize" value="${c3p0.minPoolSize}"></property>
+        &lt;!&ndash; 初始化连接数 &ndash;&gt;
+        <property name="initialPoolSize" value="${c3p0.initialPoolSize}"></property>
+        &lt;!&ndash; 自增长连接数 &ndash;&gt;
+        <property name="acquireIncrement" value="${c3p0.acquireIncrement}"></property>
+        &lt;!&ndash; 连接对象空闲时间 超出10分钟销毁 &ndash;&gt;
+        <property name="maxIdleTime" value="${c3p0.maxIdleTime}"></property>
+        &lt;!&ndash; 连接数据库的等待时间 超出等待时间 抛出异常 &ndash;&gt;
+        <property name="checkoutTimeout" value="${c3p0.checkoutTimeout}"></property>
+        &lt;!&ndash; 检查连接的间隔时间 &ndash;&gt;
+        <property name="idleConnectionTestPeriod" value="${c3p0.idleConnectionTestPeriod}">
+        </property>
+    </bean>-->
+
+    <!--创建sqlSession工厂对象 -->
+    <!--在此之前要保证mybatis的包和mybatis给spring提供的插件包都要导入到项目中 -->
+    <bean id="sessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--配置数据层查询文件(XxxMapper.xml文件)的地址 -->
+        <property name="mapperLocations" value="classpath:com/panda/mapper/*Mapper.xml" />
+        <!-- 配置实体类的别名 -->
+        <property name="typeAliasesPackage" value="com.panda.entity" />
+        <!--将Spring创建的c3p0连接池对象 注入给工厂对象 -->
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    <!-- 创建查询接口信息配置对象 配置查询接口的包名 所有这个包下的接口 Spring会生成代理对象（XxxMapper接口的实现类对象） -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.woniu.mapper" />
+    </bean>
+
+    <!--声明式事务-->
+    <!--创建事务管理器对象 -->
+    <bean id="transactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <!--将Spring创建的数据源对象注入到事务管理器对象中 -->
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    <!--事务通知-->
+    <!--定义在程序执行到切入点以后  具体的切面织入方式(哪些方法需要使用事务管理 哪些不需要)-->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager" >
+        <tx:attributes>
+            <!--配置方法名的规则  前缀是insert  delete update的所有方法  需要事务控制-->
+            <tx:method name="insert*" propagation="REQUIRED"/>
+            <tx:method name="delete*" propagation="REQUIRED"/>
+            <tx:method name="update*" propagation="REQUIRED"/>
+            <!--其他方法不需要事务控制   read-only为只读 -->
+            <tx:method name="*" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!--定义切面-->
+    <aop:config>
+        <!--定义切入点-->
+        <aop:pointcut expression="execution(* com.panda.service.impl.*.*(..))" id="transactionPoint"/>
+        <!--织入 在某个切入点执行通知-->
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="transactionPoint"/>
+    </aop:config>
+
+</beans>
